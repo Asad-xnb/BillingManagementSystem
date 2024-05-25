@@ -1,0 +1,13 @@
+last.exe
+last.cpp
+last.o
+
+m.exe
+m.cpp
+m.o
+
+main.exe
+main.o
+
+.vs
+.vscode
