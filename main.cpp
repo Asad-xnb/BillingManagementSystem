@@ -140,7 +140,6 @@ public:
         cout << "\t\t\t\t| Name           | Price            |\n";
         cout << "\t\t\t\t-------------------------------------\n";
         cout << "\t\t\t\t|                                   |\n";
-        cout << "\t\t\t\t|                                   |\n";
 
         Node* current = head;
          while (current != nullptr) {
@@ -148,7 +147,6 @@ public:
             totalAmount += current->data.price;
             current = current->next;
         }
-        cout << "\t\t\t\t|                                   |\n";
         cout << "\t\t\t\t|                                   |\n";
         cout << "\t\t\t\t-------------------------------------\n";
         cout << "\t\t\t\tTotal amount:              RS: " << setw(10) << fixed << totalAmount << " \n";
@@ -163,13 +161,11 @@ public:
             file << "| Name           | Price            |\n";
             file << "-------------------------------------\n";
             file << "|                                   |\n";
-            file << "|                                   |\n";
             Node* current = head;
             while (current != nullptr) {
                 file << "| " << setw(15) << left << current->data.name << "  RS: " << setw(12) << fixed << current->data.price << " |\n";
                 current = current->next;
             }
-            file << "|                                   |\n";
             file << "|                                   |\n";
             file << "-------------------------------------\n";
             file << "Total amount:              RS: " << setw(10) << fixed << totalAmount << " \n";
@@ -179,7 +175,6 @@ public:
 
         clearAllItems();
         cout << "\n\n\t\t\t\tPress Enter to continue... ";
-        cin.ignore();
         cin.get();
     }
     
