@@ -4,6 +4,7 @@
 #include <unistd.h> // To use sleep function
 #include <iomanip> // To use setw function
 #include <ctime> // To use time function
+
 using namespace std;
 
 struct Item {
@@ -26,13 +27,13 @@ public:
         head = nullptr;
     }
 
-    ~LinkedList() {
-        while (head != nullptr) {
-            Node* temp = head;
-            head = head->next;
-            delete temp;
-        }
-    }
+    // ~LinkedList() {
+    //     while (head != nullptr) {
+    //         Node* temp = head;
+    //         head = head->next;
+    //         delete temp;
+    //     }
+    // }
 
     void addItem(const Item& newItem) {
         Node* newNode = new Node;
@@ -97,7 +98,37 @@ public:
 
         cout << "\t\tItem not found!\n";
     }
+    void updateItem(const string& id, const string& newName, const int& newPrice) {
+        if (id == "n" || id == "N") {
+            return;
+        }
+        if (head == nullptr) {
+            cout << "\t\t\t\tItem not found!\n";
+            for (int i = 0; i < 1; i++) {
+                cout << "=>";
+                sleep(1);
+            }
 
+            return;
+        }
+
+        Node* current = head;
+        do {
+            if (current->data.id == id) {
+                current->data.name = newName;
+                current->data.price = newPrice;
+                cout << "\t\t\t\tItem updated successfully ";
+                for (int i = 0; i < 1; i++) {
+                    cout << "=>";
+                    sleep(1);
+                }
+                return;
+            }
+            current = current->next;
+        } while (current != nullptr);
+
+        cout << "\t\tItem not found!\n";
+    }
     void generateInvoice() const {
         srand(time(0));
         long long invoiceID = rand() % 9000000000 + 1000000000;
@@ -144,7 +175,16 @@ public:
 
         }
     }
-
+    bool searchItem(const string& id) {
+        Node* current = head;
+        while (current != nullptr) {
+            if (current->data.id == id) {
+                return true;
+            }
+            current = current->next;
+        }
+        return false;
+    }
 
 
 };
@@ -261,21 +301,29 @@ int main() {
                     string id;
                     cout << "\n\n\t\t\tEnter item ID to update or (n) to go back: ";
                     cin >> id;
-                    bill.removeItem(id);
-                    Item newItem;
-                    newItem.id = id;
-                    cout << "\n\n\t\t\t\tEnter new item name: ";
-                    cin >> newItem.name;
-
-                    cout << "\t\t\t\tEnter new item price: ";
-                    cin >> newItem.price;
-                    cout << "\t\t\t\t\tLoading";
-                    for (int i = 0; i < 2; i++) {
-                        cout << ".";
-                        sleep(1);
+                    if (id == "n" || id == "N") {
+                        break;
+                    } else {
+                        if (!bill.searchItem(id)){
+                            cout << "\t\t\t\tItem not found!\n";
+                            cout << "\n\n\t\t\tPress Enter to continue... ";
+                            cin.ignore();
+                            cin.get();
+                            break;
+                        }
+                        string newName;
+                        int newPrice;
+                        cout << "\t\t\t\tUpdate name: ";
+                        cin >> newName;
+                        cout << "\t\t\t\tUpdate price: ";
+                        cin >> newPrice;
+                        bill.updateItem(id, newName, newPrice);
+                        cout << "\n\n\t\t\tPress Enter to continue... ";
+                        cin.ignore();
+                        cin.get();
+                        break;
                     }
-                    bill.addItem(newItem);
-                    break;
+
                 }
             case 4: 
                 system("cls");
