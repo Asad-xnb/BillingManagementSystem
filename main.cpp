@@ -171,13 +171,13 @@ public:
             file << "Total amount:              RS: " << setw(10) << fixed << totalAmount << " \n";
             file << "-------------------------------------\n";
             file.close();
-        } 
+        }
 
         clearAllItems();
         cout << "\n\n\t\t\t\tPress Enter to continue... ";
         cin.get();
     }
-    
+
     void checkout() {
         cout << "\n\n\n\n";
         cout << "\t\t\t\t******************************************\n";
@@ -186,15 +186,15 @@ public:
 
         string cardNumber, date, cvc;
 
-        cout << "\t\t\t\t| Enter card number: "; 
+        cout << "\t\t\t\t| Enter card number: ";
         cin >> cardNumber;
         cout << "\t\t\t\t------------------------------------------\n";
 
-        cout << "\t\t\t\t| Expiry date (mm/yy): "; 
+        cout << "\t\t\t\t| Expiry date (mm/yy): ";
         cin >> date;
         cout << "\t\t\t\t------------------------------------------\n";
 
-        cout << "\t\t\t\t| Enter CVC: "; 
+        cout << "\t\t\t\t| Enter CVC: ";
         cin >> cvc;
         cout << "\t\t\t\t------------------------------------------\n";
 
@@ -209,7 +209,7 @@ public:
             cout << "\n\n\t\t\t\tPayment successful!\n";
             cout << "\t\t\t\tThank you for shopping with us!\n";
             cout << "\t\t\t\tPress Enter to Generate Invoice... ";
-            cin.ignore(); 
+            cin.ignore();
             cin.get();
             generateInvoice();
         } else {
@@ -229,13 +229,13 @@ public:
             }
         }
     }
-    
+
     string customHash(const string& str) {
         long hash = 0;
         for (char c : str) {
             hash += c;
         }
-        
+
         hash = (hash * 31) % 100000;
 
         stringstream ss;
@@ -294,7 +294,7 @@ public:
         }
         return false;
     }
-    
+
 
 };
 
@@ -320,9 +320,9 @@ int main() {
     fflush(stdin);
     fflush(stdout);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    
+
     LinkedList bill;
-    
+
     int choice;
     do {
         system("cls");
@@ -333,7 +333,7 @@ int main() {
 
         switch (choice) {
             case 1: {
-                system("cls"); 
+                system("cls");
                 cout << "\n\n";
 
                 cout << "\t\t\t\t\tLoading";
@@ -342,7 +342,7 @@ int main() {
                     sleep(1);
                 }
 
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN); 
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 system("cls");
 
                 Item newItem;
@@ -355,7 +355,8 @@ int main() {
                 cout << "\t\t\t\t******************************\n\n";
 
                 cout << "\t\t\t\tEnter item name: ";
-                cin >> newItem.name;
+                cin.ignore();
+                getline(cin, newItem.name);
 
                 cout << "\t\t\t\tEnter item price: ";
                 cin >> newItem.price;
@@ -386,7 +387,7 @@ int main() {
                     string id;
                     cout << "\n\n\t\t\tEnter item ID to remove or (n) to go back: ";
                     cin >> id;
-                    bill.removeItem(id); 
+                    bill.removeItem(id);
                     system("cls");
                     cout << "\n\n\n\n";
                     cout << "\t\t\t\tThe updated list: \n\n\n\n";
@@ -436,7 +437,8 @@ int main() {
                         string newName;
                         int newPrice;
                         cout << "\t\t\t\tUpdate name: ";
-                        cin >> newName;
+                        cin.ignore();
+                        getline(cin, newName);
                         cout << "\t\t\t\tUpdate price: ";
                         cin >> newPrice;
                         bill.updateItem(id, newName, newPrice);
