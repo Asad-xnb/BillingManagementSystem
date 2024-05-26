@@ -4,6 +4,8 @@
 #include <unistd.h> // To use sleep function
 #include <iomanip> // To use setw function
 #include <ctime> // To use time function
+#include <fstream> // To use file handling
+#include <sstream> // To use stringstream
 
 using namespace std;
 
@@ -27,14 +29,6 @@ public:
         head = nullptr;
     }
 
-    // ~LinkedList() {
-    //     while (head != nullptr) {
-    //         Node* temp = head;
-    //         head = head->next;
-    //         delete temp;
-    //     }
-    // }
-
     void addItem(const Item& newItem) {
         Node* newNode = new Node;
         newNode->data = newItem;
@@ -56,7 +50,6 @@ public:
                 sleep(1);
         }
     }
-
     void removeItem(const string& id) {
         if (id == "n" || id == "N") {
             return;
@@ -129,7 +122,15 @@ public:
 
         cout << "\t\tItem not found!\n";
     }
-    void generateInvoice() const {
+    void clearAllItems() {
+        while (head != nullptr) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
+    void generateInvoice() {
+        system("cls");
         srand(time(0));
         long long invoiceID = rand() % 9000000000 + 1000000000;
         int totalAmount = 0;
@@ -152,12 +153,125 @@ public:
         cout << "\t\t\t\t-------------------------------------\n";
         cout << "\t\t\t\tTotal amount:              RS: " << setw(10) << fixed << totalAmount << " \n";
         cout << "\t\t\t\t-------------------------------------\n";
+
+        string filename = "Invoice_database/" + to_string(invoiceID) + ".txt";
+        ofstream file(filename);
+
+        if (file.is_open()) {
+            file << "Invoice ID: " << invoiceID << endl;
+            file << "-------------------------------------\n";
+            file << "| Name           | Price            |\n";
+            file << "-------------------------------------\n";
+            file << "|                                   |\n";
+            file << "|                                   |\n";
+            Node* current = head;
+            while (current != nullptr) {
+                file << "| " << setw(15) << left << current->data.name << "  RS: " << setw(12) << fixed << current->data.price << " |\n";
+                current = current->next;
+            }
+            file << "|                                   |\n";
+            file << "|                                   |\n";
+            file << "-------------------------------------\n";
+            file << "Total amount:              RS: " << setw(10) << fixed << totalAmount << " \n";
+            file << "-------------------------------------\n";
+            file.close();
+        } 
+
+        clearAllItems();
+        cout << "\n\n\t\t\t\tPress Enter to continue... ";
+        cin.ignore();
+        cin.get();
+    }
+    
+    void checkout() {
+        cout << "\n\n\n\n";
+        cout << "\t\t\t\t******************************************\n";
+        cout << "\t\t\t\t*          Enter Credit Card Details     *\n";
+        cout << "\t\t\t\t******************************************\n";
+
+        string cardNumber, date, cvc;
+
+        cout << "\t\t\t\t| Enter card number: "; 
+        cin >> cardNumber;
+        cout << "\t\t\t\t------------------------------------------\n";
+
+        cout << "\t\t\t\t| Expiry date (mm/yy): "; 
+        cin >> date;
+        cout << "\t\t\t\t------------------------------------------\n";
+
+        cout << "\t\t\t\t| Enter CVC: "; 
+        cin >> cvc;
+        cout << "\t\t\t\t------------------------------------------\n";
+
+        cout << "\n\n\t\t\t\tProcessing payment";
+        for (int i = 0; i < 3; ++i) {
+            cout << ".";
+            sleep(1);
+        }
+        cout << "\n";
+
+        if (validateCardDetails(cardNumber, cvc)) {
+            cout << "\n\n\t\t\t\tPayment successful!\n";
+            cout << "\t\t\t\tThank you for shopping with us!\n";
+            cout << "\t\t\t\tPress Enter to Generate Invoice... ";
+            cin.ignore(); 
+            cin.get();
+            generateInvoice();
+        } else {
+            char again;
+            cout << "\n\n\t\t\t\tPayment failed: Invalid card details!\n";
+            cout << "\t\t\t\tWould you like to try again? (y/n): ";
+            cin >> again;
+            if (again == 'y' || again == 'Y') {
+                system("cls");
+                checkout();
+            } else {
+                cout << "\n\n\t\t\t\tThank you for shopping with us!\n";
+                cout << "\t\t\t\tPress Enter to continue... ";
+                cin.ignore();
+                cin.get();
+                return;
+            }
+        }
+    }
+    
+    string customHash(const string& str) {
+        long hash = 0;
+        for (char c : str) {
+            hash += c;
+        }
+        
+        hash = (hash * 31) % 100000;
+
+        stringstream ss;
+        ss << hash;
+        return ss.str();
     }
 
+    bool validateCardDetails(const string& cardNumber, const string& cvc) {
+        string hashedCardNumber = customHash(cardNumber);
+        string hashedCvc = customHash(cvc);
+
+        ifstream file("CreditCard_Database.txt");
+        if (file.is_open()) {
+            string line;
+            while (getline(file, line)) {
+                size_t separator = line.find(' ');
+                if (separator != string::npos) {
+                    string storedHashedCardNumber = line.substr(0, separator);
+                    string storedHashedCvc = line.substr(separator + 1);
+                    if (storedHashedCardNumber == hashedCardNumber && storedHashedCvc == hashedCvc) {
+                        return true;
+                    }
+                }
+            }
+            file.close();
+        }
+        return false;
+    }
     bool itemsAvailable() {
         return head != nullptr;
     }
-
     bool displayAllItems() {
         Node* current = head;
         if (current == nullptr) {
@@ -185,7 +299,7 @@ public:
         }
         return false;
     }
-
+    
 
 };
 
@@ -199,18 +313,21 @@ void displayMenu() {
     cout << "\t\t\t\t* 2. Remove item                         *\n";
     cout << "\t\t\t\t* 3. Update item                         *\n";
     cout << "\t\t\t\t* 4. Display items                       *\n";
-    cout << "\t\t\t\t* 5. Generate invoice                    *\n";
+    cout << "\t\t\t\t* 5. Checkout                            *\n";
     cout << "\t\t\t\t*                                        *\n";
+    cout << "\t\t\t\t* 6. Clear The Bill                      *\n";
     cout << "\t\t\t\t* 0. Exit                                *\n";
     cout << "\t\t\t\t*                                        *\n";
     cout << "\t\t\t\t******************************************\n";
 }
 
 int main() {
+    fflush(stdin);
     fflush(stdout);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
+    
     LinkedList bill;
+    
     int choice;
     do {
         system("cls");
@@ -221,7 +338,7 @@ int main() {
 
         switch (choice) {
             case 1: {
-                system("cls");
+                system("cls"); 
                 cout << "\n\n";
 
                 cout << "\t\t\t\t\tLoading";
@@ -229,21 +346,32 @@ int main() {
                     cout << ".";
                     sleep(1);
                 }
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN  );
+
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN); 
                 system("cls");
+
                 Item newItem;
+
                 newItem.id = to_string(rand() % 10000 + 1000);
-                cout << "\n\n\n\n";
+
+                cout << "\n\n";
+                cout << "\t\t\t\t******************************\n";
+                cout << "\t\t\t\t*        Add New Item        *\n";
+                cout << "\t\t\t\t******************************\n\n";
+
                 cout << "\t\t\t\tEnter item name: ";
                 cin >> newItem.name;
 
                 cout << "\t\t\t\tEnter item price: ";
                 cin >> newItem.price;
+
+                cout << "\n\n";
                 cout << "\t\t\t\t\tLoading";
                 for (int i = 0; i < 2; i++) {
                     cout << ".";
                     sleep(1);
                 }
+
                 bill.addItem(newItem);
                 break;
             }
@@ -278,8 +406,7 @@ int main() {
                     break;
                 }
             }
-
-            case 3: 
+            case 3: {
                 system("cls");
                 cout << "\n\n\n\t\t\t\t\tLoading";
                 for (int i = 0; i < 2; i++) {
@@ -287,7 +414,7 @@ int main() {
                     sleep(1);
                 }
                 system("cls");
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN  );
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                 if(!bill.itemsAvailable()) {
                     cout << "\n\n\t\t\t\tNo items found!\n\n";
                     cout << "\n\n\t\t\tPress Enter to continue... ";
@@ -325,7 +452,8 @@ int main() {
                     }
 
                 }
-            case 4: 
+            }
+            case 4: {
                 system("cls");
                 cout << "\n\n\n\t\t\t\t\tLoading";
                 for (int i = 0; i < 2; i++) {
@@ -348,8 +476,8 @@ int main() {
                     cin.get();
                     break;
                 }
-                    
-            case 5:
+            }
+            case 5: {
                 system("cls");
                 cout << "\n\n\n\t\t\t\t\tLoading";
                 for (int i = 0; i < 2; i++) {
@@ -357,7 +485,7 @@ int main() {
                     sleep(1);
                 }
                 system("cls");
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN  );
+                SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN  );
                 if(!bill.itemsAvailable()) {
                     cout << "\n\n\t\t\t\tNo items found!\n\n";
                     cout << "\n\n\t\t\tPress Enter to continue... ";
@@ -365,12 +493,35 @@ int main() {
                     cin.get();
                     break;
                 } else {
-                    bill.generateInvoice();
+                    bill.checkout();
+                    break;
+                }
+            }
+            case 6: {
+                system("cls");
+                cout << "\n\n\n\t\t\t\t\tLoading";
+                for (int i = 0; i < 2; i++) {
+                    cout << ".";
+                    sleep(1);
+                }
+                system("cls");
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+                if(!bill.itemsAvailable()) {
+                    cout << "\n\n\t\t\t\tNo Bill found!\n\n";
+                    cout << "\n\n\t\t\tPress Enter to continue... ";
+                    cin.ignore();
+                    cin.get();
+                    break;
+                } else {
+                    cout << "\n\n\n\n";
+                    bill.clearAllItems();
+                    cout << "\n\n\t\t\t\tBill cleared successfully!\n";
                     cout << "\n\n\t\t\tPress Enter to continue... ";
                     cin.ignore();
                     cin.get();
                     break;
                 }
+            }
             case 0:
                 cout << "\n\n\n\n\t\t\tExiting...\n";
                 break;
@@ -385,3 +536,4 @@ int main() {
 
     return 0;
 }
+
